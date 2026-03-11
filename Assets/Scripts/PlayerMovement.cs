@@ -3,15 +3,22 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Movement")]
     public float moveSpeed = 20f;
+
+    [Header("Jump")]
     public float jumpForce = 30f;
     public float riseMultiplier = 10f;
     public float fallMultiplier = 10f;
     public int maxJump = 2;
 
+    [SerializeField] private Animator animator;
+
     private Rigidbody rb;
+
     private int jumpCount;
-    private Vector2 moveInput;
+
+    private float moveInput;
 
     void Awake()
     {
@@ -20,12 +27,38 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        HandleMovement();
+        HandleJump();
+    }
+
+    void HandleMovement()
+    {
+        float targetSpeed = moveInput * moveSpeed;
+
         rb.linearVelocity = new Vector3(
-            moveInput.x * moveSpeed,
+            targetSpeed,
             rb.linearVelocity.y,
             0f
         );
 
+        if (moveInput > 0)
+        {
+            transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            animator.SetBool("IsRunning", true);
+        }
+        else if (moveInput < 0)
+        {
+            transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            animator.SetBool("IsRunning", true);
+        }
+        else
+        {
+            animator.SetBool("IsRunning", false);
+        }
+    }
+
+    void HandleJump()
+    {
         if (rb.linearVelocity.y > 0)
         {
             rb.linearVelocity += Vector3.up * Physics.gravity.y *
@@ -40,7 +73,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnMove(InputValue value)
     {
-        moveInput = value.Get<Vector2>();
+        Vector2 input = value.Get<Vector2>();
+        moveInput = input.x;
     }
 
     public void OnJump(InputValue value)
