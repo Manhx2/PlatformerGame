@@ -17,8 +17,9 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody rb;
 
     private int jumpCount;
-
     private float moveInput;
+
+    private bool isGrounded;
 
     void Awake()
     {
@@ -29,6 +30,18 @@ public class PlayerMovement : MonoBehaviour
     {
         HandleMovement();
         HandleJump();
+
+        animator.SetFloat("yVelocity", rb.linearVelocity.y);
+        animator.SetBool("IsGrounded", isGrounded);
+
+        if (isGrounded && rb.linearVelocity.y < 0)
+        {
+            rb.linearVelocity = new Vector3(
+                rb.linearVelocity.x,
+                0f,
+                rb.linearVelocity.z
+            );
+        }
     }
 
     void HandleMovement()
@@ -93,6 +106,8 @@ public class PlayerMovement : MonoBehaviour
                 rb.linearVelocity.z
             );
             jumpCount++;
+
+            isGrounded = false;
         }
     }
 
@@ -105,9 +120,18 @@ public class PlayerMovement : MonoBehaviour
                 if (contact.normal.y > 0.8f)
                 {
                     jumpCount = 0;
+                    isGrounded = true;
                     break;
                 }
             }
+        }
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = false;
         }
     }
 }
