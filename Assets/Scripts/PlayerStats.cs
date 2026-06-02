@@ -17,6 +17,21 @@ public class PlayerStats : MonoBehaviour
     [Range(0f, 1f)] 
     public float effectResistance = 0.01f;
 
+    [Header("Growth Per Level (%)")]
+    public float hpGrowth = 10f;
+    public float atkGrowth = 8f;
+    public float defGrowth = 5f;
+
+    public float critRateGrowth = 0.01f;
+    public float critDamageGrowth = 0.05f;
+    public float effectResGrowth = 0.01f;
+
+    private DamageEffect damageEffect;
+
+    private void Awake()
+    {
+        damageEffect = GetComponent<DamageEffect>();
+    }
 
     void Start()
     {
@@ -28,12 +43,26 @@ public class PlayerStats : MonoBehaviour
         int finalDamage = Mathf.Max(damage - def, 1);
         currentHP -= finalDamage;
 
+        StartCoroutine(DamageDelayed(finalDamage));
+
         Debug.Log("Player took " + finalDamage + " damage");
 
         if (currentHP <= 0)
         {
             Die();
-        }
+        } 
+    }
+
+    private IEnumerator DamageDelayed(int damage)
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        DamagePopupManager.Instance.ShowDamage(
+            transform.position + Vector3.up * 2f,
+            damage
+        );
+
+        damageEffect?.PlayDamageEffect();
     }
 
     public int GetDamage()
@@ -62,5 +91,23 @@ public class PlayerStats : MonoBehaviour
     {
         Debug.Log("Player died");
         gameObject.SetActive(false);
+    }
+
+    public void LevelUpStats()
+    {
+        maxHP = Mathf.RoundToInt(maxHP * (1f + hpGrowth / 100f));
+
+        atk = Mathf.RoundToInt(atk * (1f + atkGrowth / 100f));
+
+        def = Mathf.RoundToInt(def * (1f + defGrowth / 100f));
+
+        critRate = Mathf.Min(1f, critRate + critRateGrowth);
+
+        critDamage += critDamageGrowth;
+
+        effectResistance =
+            Mathf.Min(1f, effectResistance + effectResGrowth);
+
+        currentHP = maxHP;
     }
 }
