@@ -18,6 +18,8 @@ public class PlayerLevel : MonoBehaviour
 
     private PlayerStats playerStats;
 
+    private SkillUnlockUI skillUI;
+
     private void Awake()
     {
         playerStats = GetComponent<PlayerStats>();
@@ -26,6 +28,7 @@ public class PlayerLevel : MonoBehaviour
     private void Start()
     {
         UpdateUI();
+        skillUI = FindFirstObjectByType<SkillUnlockUI>();
     }
 
     public void AddExp(int amount)
@@ -49,6 +52,15 @@ public class PlayerLevel : MonoBehaviour
             Mathf.RoundToInt(expToNextLevel * expRequirementMultiplier);
 
         playerStats.LevelUpStats();
+
+        if (currentLevel == 2)
+        {
+            playerStats.UnlockShieldSkill();
+
+            skillUI?.ShowUnlockMessage(
+                "NEW SKILL UNLOCKED!\nPress E to activate"
+            );
+        }
 
         Debug.Log("Level Up! Lv." + currentLevel);
     }
